@@ -52,7 +52,8 @@ UM.plugins['video'] = function (){
             var html = [],id = 'tmpVedio';
             for(var i=0,vi,len = videoObjs.length;i<len;i++){
                  vi = videoObjs[i];
-                 html.push(creatInsertStr( vi.url, vi.width || 420,  vi.height || 280, id + i,vi.align,false));
+                 html.push(creatInsertStr( vi.url, vi.width || 420,  vi.height || 280, id + i,vi.align,true));
+                 // 插入embed
             }
             me.execCommand("inserthtml",html.join(""),true);
 

@@ -30,6 +30,8 @@
         "grunt-contrib-copy": "~0.4.0",
         "grunt-transcoding": "~0.1.1",
         "grunt-text-replace": "~0.3.9",
+         "grunt-contrib-watch": "0.4.3",
+        "grunt-contrib-uglify": "",
         "grunt-contrib-compress": "~0.7.0"
     },
     "devDependencies": {

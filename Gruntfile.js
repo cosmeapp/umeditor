@@ -89,6 +89,16 @@ module.exports = function ( grunt ) {
                 dest: disDir + '<%= pkg.name %>.min.js'
             }
         },
+        uglify: {
+            options: {
+              mangle: false
+            },
+            my_target: {
+              files: {
+                'dist/utf8-php/<%= pkg.name %>.min.js': [disDir + '<%= pkg.name %>.js']
+              }
+            }
+        },
         copy: {
             base: {
                 files: [
@@ -102,8 +112,12 @@ module.exports = function ( grunt ) {
             demo: {
                 files: [
                     {
-                        src: '_examples/completeDemo.html',
+                        src: '_examples/dev-cosmeapp.html',
                         dest: disDir + 'index.html'
+                    },
+                    {
+                        src: '_examples/dev-cosmeapp.html',
+                        dest: disDir + 'dev-cosmeapp.html'
                     }
                 ]
             },
@@ -134,6 +148,21 @@ module.exports = function ( grunt ) {
                 src: 'net/**',
                 dest: disDir
 
+            },
+            s: {
+                expand: true,
+                cwd: 'dist/utf8-php/',
+                src: '**',
+                dest: '../../s/<%= pkg.name %>/<%= pkg.version %>/'
+
+            },
+            devDemo: {
+                files: [
+                    {
+                        src: disDir + 'dev-cosmeapp.html',
+                        dest: '../../s/<%= pkg.name %>/<%= pkg.version %>/dev-cosmeapp.html'
+                    }
+                ]
             }
         },
         transcoding: {
@@ -171,7 +200,7 @@ module.exports = function ( grunt ) {
                 } ]
             },
             demo:{
-                src: disDir+'index.html',
+                src: disDir+'*.html',
                 overwrite: true,
                 replacements: [ {
                     from: /\.\.\//gi,
@@ -204,8 +233,15 @@ module.exports = function ( grunt ) {
                 cwd: disDir,
                 src: ['**/*']
             }
+        },
+        watch: {
+            demo: {
+                files: [
+                    '_examples/*.html'
+                ],
+                tasks: ['default']
+            }
         }
-
     } );
 
     grunt.loadNpmTasks('grunt-text-replace');
@@ -215,10 +251,12 @@ module.exports = function ( grunt ) {
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-transcoding');
     grunt.loadNpmTasks('grunt-contrib-compress');
+    grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-watch');
 
     grunt.registerTask('default', 'UEditor Mini build', function () {
 
-        var tasks = [ 'concat', 'cssmin', 'closurecompiler', 'copy:base', 'copy:'+server, 'copy:demo', 'replace:demo' ];
+        var tasks = [ 'concat', 'cssmin', 'uglify', 'copy:base', 'copy:'+server, 'copy:demo',  'replace:demo','copy:s', 'copy:devDemo', 'watch'];
 
         if ( encode === 'gbk' ) {
             tasks.push( 'replace:fileEncode' );
@@ -236,6 +274,9 @@ module.exports = function ( grunt ) {
 
     } );
 
+    // grunt.registerTask('watch', [
+    //     'watch'
+    // ]);
 
     function updateConfigFile () {
 

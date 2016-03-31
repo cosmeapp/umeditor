@@ -16,6 +16,7 @@ UM.plugins['autoupload'] = function () {
         var fd = new FormData();
         fd.append(editor.options.imageFieldName || 'upfile', file, file.name || ('blob.' + file.type.substr('image/'.length)));
         fd.append('type', 'ajax');
+        fd.append('_token', editor.options._token);
         var xhr = new XMLHttpRequest();
         xhr.open("post", me.options.imageUrl, true);
         xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
@@ -81,6 +82,7 @@ UM.plugins['autoupload'] = function () {
                 id = img.id = 'base64img_' + (+new Date());
                 options['base64'] = true;
                 options[me.getOpt('imageFieldName')] = base64;
+                options['_token'] = me.getOpt('_token')
                 $.post(me.getOpt('imageUrl'), options, function(r){
                     var json = eval('('+r+')'),
                         $img = $('#' + id),

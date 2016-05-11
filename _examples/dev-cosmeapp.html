@@ -131,7 +131,8 @@
             window.UMEDITOR_CONFIG = {
 
                 //为编辑器实例添加一个路径，这个不能被注释
-                UMEDITOR_HOME_URL : URL
+                // UMEDITOR_HOME_URL : URL
+                UMEDITOR_HOME_URL: 'http://cdn.me/lib/umeditor/'
 
                 //图片上传配置区
                 ,imageUrl:URL+"php/imageUp.php"             //图片上传提交地址
@@ -255,7 +256,7 @@
 
 <style type="text/css">
 .container{ width: 385px; margin: 0 auto; }
-.edui-editor-body .edui-body-container img{ max-width: 100%!important; }
+.edui-editor-body .edui-body-container img{ max-width: 100%!important; height: auto!important; }
 .action-btn{ width: 100%; height: 30px; line-height: 30px; }
 </style>
 
@@ -271,9 +272,15 @@
 </div>
 
 <script type="text/javascript">
-    var F = {};
+    // var F = {};
 </script>
-<script src="//public.cosmeapp.com/fis/qiniu/qiniu-js-sdk_104dfca.js"></script><!--ignore-->
+<!-- <script src="//public.cosmeapp.com/fis/qiniu/qiniu-js-sdk_104dfca.js"></script> --><!--ignore-->
+<link rel="stylesheet" type="text/css" href="http://p.cosmeapp.com/s/xmod/1.0.8/base.css">
+<script src="http://p.cosmeapp.com/s/??zepto/1.1.6/index-debug.js,fsj/3.0.5/base-debug.js,xmod/1.0.8/base.js,xmod/1.0.8/init.js"></script>
+
+<script src="http://public.cosmeapp.com/s/??plupload/2.1.1/plupload.full.min.js,plupload/2.1.1/i18n/zh_CN.js,qiniu-js/1.0.15-beta/qiniu.js,qiniu-js/1.0.15-beta/ui.js"></script><!--ignore-->
+
+
 <script type="text/javascript">
 var CFG = {
     'content': '', // 编辑的时候渲染
@@ -286,6 +293,26 @@ var um = UM.getEditor('myEditor', {
         domain: 'http://huixisheng.qiniudn.com/', //
     }
 });
+
+um.addListener('beforepaste', function(o, html) {
+    // @todo 过滤操作
+  html.html = formatHtml(html.html);
+});
+
+function formatHtml(str){
+  //str = str.replace(/<br\w*\/*>/g,"<p></p>");
+  //str = str.replace(/(<div)/igm, '<p').replace(/<\/div>/igm, '</p>');
+  var  re = /<(?!img|p).*?>/ig;
+  str = str.replace(re,"");
+  str = str.replace(new RegExp('<p.*?>','g'),'<p>');
+  return str;
+}
+
+        um.addListener( 'afterinserthtml', function () {
+            lazyload.init();
+
+        } );
+
 if( CFG['content'] != '' ){
     um.setContent(CFG['content']);
 }
@@ -312,6 +339,7 @@ function postContent(data){
 
 $(document).ready(function(){
     postContent();
+
 });
 
 })();

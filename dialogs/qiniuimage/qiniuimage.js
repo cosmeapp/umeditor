@@ -1,4 +1,75 @@
+
 (function () {
+
+function QiniuUploader(cfg){
+    var self = this;
+    if (!(self instanceof QiniuUploader)) {
+        return new QiniuUploader(cfg);
+    }
+    var defaults = {
+        runtimes: 'html5,html4',
+        max_file_size: '10mb',
+        browse_button: 'pickfiles',
+        container: 'container',
+        drop_element: 'container',
+        dragdrop: true,
+        chunk_size: '4mb',
+        unique_names: false,
+        save_key: true,
+        uptoken_url: $('#uptoken_url').val(),
+        domain: $('#domain').val(),
+        get_new_uptoken: false,
+        auto_start: true,
+        init: {
+            Error: function(){
+
+            },
+            FileUploaded: function(uploader, file, info){
+                // info 为 "{"hash":"FuhLJned9sAifJiitsLUf8QieMwk","key":"Icon-60@3x.png"}"
+                // debugger;
+            }
+        }
+
+    }
+    this.config = $.extend(defaults, cfg, true);
+    this._init();
+}
+QiniuUploader.prototype = {
+    _init: function(){
+        var config = this.config;
+        var uploader = Qiniu.uploader(config);
+        this.uploader = uploader;
+        uploader.bind('FilesAdded', function(uploader, files){
+
+        });
+        uploader.bind('BeforeUpload', function(uploader, file){
+            // 处理分块
+        });
+        uploader.bind('UploadProgress', function(uploader, file){
+            // 进度条
+        });
+        uploader.bind('UploadComplete', function(uploader, files){
+
+        });
+        /* bind 的参数很init FileUploaded  参数是不一样的。
+        info response: "{"hash":"FuhLJned9sAifJiitsLUf8QieMwk","key":"Icon-60@3x.png"}"
+        responseHeaders: "Pragma: no-cache
+        ↵Content-Type: application/json
+        ↵Cache-Control: no-store, no-cache, must-revalidate
+        ↵"
+        status: 200
+        */
+        uploader.bind('FileUploaded', function(uploader, file, info){
+
+        });
+        uploader.bind('Error', function(uploader, error, errorMsg){
+
+        });
+    }
+}
+
+// F.Qiniu = Qiniu;
+// F.QiniuUploader = QiniuUploader;
 
     var utils = UM.utils,
         browser = UM.browser,
@@ -26,7 +97,7 @@
                 $imgs = $(sel, $w);
 
             $.each($imgs, function (index, node) {
-                $(node).removeAttr("width").removeAttr("height");
+                // $(node).removeAttr("width").removeAttr("height");
 
                // if (node.width > editor.options.initialFrameWidth) {
                //     me.scale(node, editor.options.initialFrameWidth -
@@ -35,8 +106,10 @@
                // }
 
                 return arr.push({
-                    _src: node.src,
-                    src: node.src
+                    width: 750,
+                    height: 375,
+                    lazyload: node.src,
+                    src: "//static.cosmeapp.com/top/201501/12/10/32/54b3323b470da636.gif"
                 });
             });
 
@@ -96,12 +169,12 @@
                 reader.readAsDataURL(file);
             }
         },
-        callback: function (editor, $w, url, state) {
+        callback: function (editor, $w, url, state, qiniuResponse) {
 
             if (state == "SUCCESS") {
                 //显示图片计数+1
                 Upload.showCount++;
-                var $img = $("<img src='" + url + "' class='edui-image-pic' />"),
+                var $img = $("<img src='" + url + "' data-qiniu='" + qiniuResponse  +"' class='edui-image-pic' />"),
                     $item = $("<div class='edui-image-item edui-image-upload-item'><div class='edui-image-close'></div></div>").append($img);
 
                 if ($(".edui-image-upload2", $w).length < 1) {
@@ -177,7 +250,7 @@
                 // }
             }
             cfg = $.extend(cfg, me.editor.getOpt('qiniuimage'))
-            var instance = new F.QiniuUploader(cfg);
+            var instance = new QiniuUploader(cfg);
 
             var loadingInstance;
             instance.uploader.bind('FilesAdded', function(uploader, files){
@@ -192,36 +265,11 @@
                 // loadingInstance.loading("hide");
                 var domain = uploader.getOption('domain');
                 var response = JSON.parse(info.response);
-                // 上传图片的尺寸处理 @todo
+
                 var imageSrc = Qiniu.getUrl(response.key);
-
-                Base.callback(me.editor, me.dialog, imageSrc, 'SUCCESS');
-                // Upload.uploadComplete(imageSrc);
-                // self.postContent({
-                //     'type': 'image',
-                //     'message': response.key
-                // }, function(data, status, xhr){
-                //     if( data.status == 1 ){
-                //         setTimeout(function(){
-                //             self.$serviceFormBtns.hide();
-                //         }, 2000);
-                //     }
-                // });
-                // var data = {
-                //     'photo': imageSrc
-                // }
-                // // postmsg
-
-                // var tpl = __inline('../widget/tpl-msglist-item.html');
-                // var render = template.compile(tpl);
-                // var html = render(data);
-                // $('.msglist-list-service').append(html);
-                // var tipsCfg = {
-                //     content: '图片上传成功',
-                //     type: 'success',
-                //     stayTime: 1000
-                // }
-                // $.tips(tipsCfg);
+                var imageInfo = Qiniu.imageInfo(response.key);
+                imageInfo = $.extend(imageInfo, response);
+                Base.callback(me.editor, me.dialog, imageSrc, 'SUCCESS', JSON.stringify(imageInfo));
             });
 
             return me;
@@ -425,7 +473,7 @@
             "<div class=\"edui-image-wrapper\">" +
             "<ul class=\"edui-tab-nav\">" +
             "<li class=\"edui-tab-item edui-active\"><a data-context=\".edui-image-local\" class=\"edui-tab-text\"><%=lang_tab_local%></a></li>" +
-            "<li  class=\"edui-tab-item\"><a data-context=\".edui-image-JimgSearch\" class=\"edui-tab-text\"><%=lang_tab_imgSearch%></a></li>" +
+            //"<li  class=\"edui-tab-item\"><a data-context=\".edui-image-JimgSearch\" class=\"edui-tab-text\"><%=lang_tab_imgSearch%></a></li>" +
             "</ul>" +
             "<div class=\"edui-tab-content\">" +
             "<div id=\"J_FormPhoto\"   class=\"edui-image-local edui-tab-pane edui-active\">" +

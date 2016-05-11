@@ -56,6 +56,7 @@
                     var href = $('#edui-link-Jhref').val().replace(/^\s+|\s+$/g, '');
 
                     if (href) {
+                        debugger;
                         editor.execCommand('link', {
                             'href': href,
                             'target': $("#edui-link-Jtarget:checked").length ? "_blank" : '_self',

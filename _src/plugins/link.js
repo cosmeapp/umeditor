@@ -58,7 +58,7 @@ UM.plugins['link'] = function(){
     this.addOutputRule(function(root){
         $.each(root.getNodesByTagName('a'),function(i,a){
             var _href = utils.html(a.getAttr('_href'));
-            if(!/^(ftp|tel|https?|\/|file)/.test(_href)){
+            if(!/^(ftp|tel|https?|\/|file|cosmeapp:\/\/)/.test(_href)){
                 _href = 'http://' + _href;
             }
             a.setAttr('href', _href);
@@ -84,7 +84,7 @@ UM.plugins['link'] = function(){
                     $(start).attr(opt);
                     rng.selectNode(start).select()
                 }else{
-                    rng.insertNode($('<a>').text(opt.href).attr(opt)[0]).select();
+                    rng.insertNode($('<a>').text(opt.title).attr(opt)[0]).select();
 
                 }
 
@@ -95,7 +95,7 @@ UM.plugins['link'] = function(){
                     return n.getAttribute('href') == '_umeditor_link'
                 }),function(l){
                     if($(l).text() == '_umeditor_link'){
-                        $(l).text(opt.href);
+                        $(l).text(opt.title);
                     }
                     domUtils.setAttributes(l,opt);
                     rng.selectNode(l).select()

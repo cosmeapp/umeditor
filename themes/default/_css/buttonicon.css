@@ -1,6 +1,10 @@
 .edui-btn-toolbar .edui-btn .edui-icon-qiniuimage {
     background-position: -380px 0;
 }
+
+.edui-btn-toolbar .edui-btn .edui-icon-product {
+    background-position:  -40px -40px;
+}
 #J_FormPhoto{ position: relative; }
 
 .edui-btn-toolbar .edui-btn .edui-icon-source {
@@ -19,7 +23,7 @@
     background-position: -60px 0;
 }
 .edui-btn-toolbar  .edui-btn .edui-icon-underline  {
-    background-position: -140px 0
+    background-position: -140px 0;
 }
 .edui-btn-toolbar .edui-btn .edui-icon-strikethrough {
     background-position: -120px 0;

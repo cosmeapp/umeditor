@@ -104,12 +104,12 @@ QiniuUploader.prototype = {
                //         parseInt($(editor.body).css("padding-left"))  -
                //         parseInt($(editor.body).css("padding-right")));
                // }
+               var imageInfo = JSON.parse($(node).attr('data-qiniu') || '{}');
 
                 return arr.push({
-                    width: 750,
-                    height: 375,
-                    lazyload: node.src,
-                    src: "//static.cosmeapp.com/top/201501/12/10/32/54b3323b470da636.gif"
+                    width: imageInfo.width,
+                    height: imageInfo.height,
+                    src: node.src
                 });
             });
 

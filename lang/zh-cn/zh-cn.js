@@ -21,7 +21,8 @@ UM.I18N['zh-cn'] = {
         'touppercase':'字母大写', 'tolowercase':'字母小写','background':'背景','template':'模板','scrawl':'涂鸦','music':'音乐','inserttable':'插入表格',
         'drafts': '草稿箱', 'formula':'数学公式',
 
-        'qiniuimage':'上传图片'
+        'qiniuimage':'上传图片',
+        'product': '产品卡片'
 
 
     },

@@ -146,7 +146,7 @@
                     'insertorderedlist insertunorderedlist | selectall cleardoc paragraph | fontfamily fontsize' ,
                     '| justifyleft justifycenter justifyright justifyjustify |',
                     'link unlink | emotion qiniuimage video ',
-                    '| horizontal print preview  fullscreen', 'drafts'
+                    '| horizontal print preview  fullscreen', 'drafts', 'product'
                 ]
 
                 //语言配置项,默认是zh-cn。有需要的话也可以使用如下这样的方式来自动多语言切换，当然，前提条件是lang文件夹下存在对应的语言文件：
@@ -258,7 +258,10 @@
 .container{ width: 385px; margin: 0 auto; }
 .edui-editor-body .edui-body-container img{ max-width: 100%!important; height: auto!important; }
 .action-btn{ width: 100%; height: 30px; line-height: 30px; }
+
 </style>
+
+<link rel="stylesheet" type="text/css" href="http://p.cosmeapp.com/fis/static/css/threaddetail_ca6b916.css">
 
 <div class="container">
     <h1>小白发帖</h1>
@@ -267,6 +270,7 @@
     </script>
     <div class="clear" style="margin-bottom: 20px;"></div>
     <div class="action">
+        <button class="btn btn-success" node-type="product">插入产品卡片</button>
         <button class="action-btn">发布</button>
     </div>
 </div>
@@ -282,6 +286,32 @@
 
 
 <script type="text/javascript">
+// UM.registerUI('product',function(name){
+//     alert(3);
+// });
+
+UM.registerUI('product',
+    function(name) {
+        var me = this;
+        var $btn = $.eduibutton({
+            icon : name,
+            click : function(){
+
+                me.execCommand(name);
+            },
+            title: this.getLang('labelMap')[name] || ''
+        });
+
+        // this.addListener('selectionchange',function(){
+        //     var state = this.queryCommandState(name);
+        //     $btn.edui().disabled(state == -1).active(state == 1)
+        // });
+        return $btn;
+    }
+);
+
+
+
 var CFG = {
     'content': '', // 编辑的时候渲染
     'pid': 12 // 编辑的时候渲染,不是编辑的时候
@@ -296,22 +326,26 @@ var um = UM.getEditor('myEditor', {
 
 um.addListener('beforepaste', function(o, html) {
     // @todo 过滤操作
+  debugger;
   html.html = formatHtml(html.html);
 });
 
 function formatHtml(str){
   //str = str.replace(/<br\w*\/*>/g,"<p></p>");
   //str = str.replace(/(<div)/igm, '<p').replace(/<\/div>/igm, '</p>');
-  var  re = /<(?!img|p).*?>/ig;
-  str = str.replace(re,"");
-  str = str.replace(new RegExp('<p.*?>','g'),'<p>');
+  str = str.replace(/Powered-by-XIUMI\sV5/ig, '');
+  str = str.replace(/img(.*?)src="(.*?)"/ig, function(s1, s2, s3){
+            return  'img ' + s2 +  'src="//static.cosmeapp.com/top/201501/12/10/32/54b3323b470da636.gif" data-lazyload="' + s3 + '"';
+        });
+  // var  re = /<(?!img|p).*?>/ig;
+  // str = str.replace(re,"");
+  // str = str.replace(new RegExp('<p.*?>','g'),'<p>');
   return str;
 }
 
-        um.addListener( 'afterinserthtml', function () {
-            lazyload.init();
-
-        } );
+um.addListener( 'afterinserthtml', function () {
+    // lazyload.init();
+} );
 
 if( CFG['content'] != '' ){
     um.setContent(CFG['content']);
@@ -321,24 +355,35 @@ if( CFG['content'] != '' ){
 
 function postContent(data){
     $('.action-btn').click(function(){
-        var data = {
-            content: um.getContent(),
-            pid: CFG['pid']
-        }
-        $.ajax({
-            url: '',
-            data: data,
-            type: 'POST',
-            dataType: 'json',
-            success: function(){
-                alert('发布成功');
-            }
-        })
+        var content = um.getContent();
+        var reg = /\<mw-card.*?\>(.*?)\<\/mw-card\>/img;
+        content = content.replace(reg, function(s, s1){
+            return s.replace(s1, '');
+        });
+        alert(content);
+        // var data = {
+        //     content: um.getContent(),
+        //     pid: CFG['pid']
+        // }
+        // $.ajax({
+        //     url: '',
+        //     data: data,
+        //     type: 'POST',
+        //     dataType: 'json',
+        //     success: function(){
+        //         alert('发布成功');
+        //     }
+        // })
     });
 }
 
 $(document).ready(function(){
     postContent();
+
+    $('[node-type="product"]').click(function(){
+        var product = '<a class="mw-card" contenteditable="false" href="cosmeapp://product/specifics/?product_id=48217"><div class="mw-card-img"><img src="http://img0.cosmeapp.com/product/2013-06-24/51c85bac30f46071.jpg?imageMogr2/auto-orient/thumbnail/750x%3E/format/webp" data-lazyload=""></div><div class="mw-card-main"><div class="mw-card-name">片仔癀皇后牌珍珠膏</div><div class="mw-card-star-wrap"><div class="mw-card-sart"><div class="mw-card-sart-percent" style="width: 80%"></div></div></div><div class="mw-card-price">            ¥82.00 261条评论</div></div><i class="mw-card-arrow"></i></a>';
+        um.execCommand('inserthtml', '<mw-card data-product="1234">' + product + '</mw-card><br>')
+    });
 
 });
 

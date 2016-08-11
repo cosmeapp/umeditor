@@ -1,75 +1,74 @@
+;(function () {
 
-(function () {
-
-function QiniuUploader(cfg){
-    var self = this;
-    if (!(self instanceof QiniuUploader)) {
-        return new QiniuUploader(cfg);
-    }
-    var defaults = {
-        runtimes: 'html5,html4',
-        max_file_size: '10mb',
-        browse_button: 'pickfiles',
-        container: 'container',
-        drop_element: 'container',
-        dragdrop: true,
-        chunk_size: '4mb',
-        unique_names: false,
-        save_key: true,
-        uptoken_url: $('#uptoken_url').val(),
-        domain: $('#domain').val(),
-        get_new_uptoken: false,
-        auto_start: true,
-        init: {
-            Error: function(){
-
-            },
-            FileUploaded: function(uploader, file, info){
-                // info 为 "{"hash":"FuhLJned9sAifJiitsLUf8QieMwk","key":"Icon-60@3x.png"}"
-                // debugger;
-            }
+    // 七牛图片上传的封装
+    function QiniuUploader(cfg){
+        var self = this;
+        if (!(self instanceof QiniuUploader)) {
+            return new QiniuUploader(cfg);
         }
+        var defaults = {
+            runtimes: 'html5,html4',
+            max_file_size: '10mb',
+            browse_button: 'pickfiles',
+            container: 'container',
+            drop_element: 'container',
+            dragdrop: false,
+            chunk_size: '4mb',
+            unique_names: false,
+            save_key: true,
+            uptoken_url: $('#uptoken_url').val(),
+            domain: $('#domain').val(),
+            get_new_uptoken: false,
+            auto_start: true,
+            init: {
+                Error: function(){
 
+                },
+                FileUploaded: function(uploader, file, info){
+                    // info 为 "{"hash":"FuhLJned9sAifJiitsLUf8QieMwk","key":"Icon-60@3x.png"}"
+                    // debugger;
+                }
+            }
+
+        }
+        this.config = $.extend(true, defaults, cfg);
+        this._init();
     }
-    this.config = $.extend(defaults, cfg, true);
-    this._init();
-}
-QiniuUploader.prototype = {
-    _init: function(){
-        var config = this.config;
-        var uploader = Qiniu.uploader(config);
-        this.uploader = uploader;
-        uploader.bind('FilesAdded', function(uploader, files){
+    QiniuUploader.prototype = {
+        _init: function(){
+            var config = this.config;
+            var uploader = Qiniu.uploader(config);
+            this.uploader = uploader;
+            uploader.bind('FilesAdded', function(uploader, files){
 
-        });
-        uploader.bind('BeforeUpload', function(uploader, file){
-            // 处理分块
-        });
-        uploader.bind('UploadProgress', function(uploader, file){
-            // 进度条
-        });
-        uploader.bind('UploadComplete', function(uploader, files){
+            });
+            uploader.bind('BeforeUpload', function(uploader, file){
+                // 处理分块
+            });
+            uploader.bind('UploadProgress', function(uploader, file){
+                // 进度条
+            });
+            uploader.bind('UploadComplete', function(uploader, files){
 
-        });
-        /* bind 的参数很init FileUploaded  参数是不一样的。
-        info response: "{"hash":"FuhLJned9sAifJiitsLUf8QieMwk","key":"Icon-60@3x.png"}"
-        responseHeaders: "Pragma: no-cache
-        ↵Content-Type: application/json
-        ↵Cache-Control: no-store, no-cache, must-revalidate
-        ↵"
-        status: 200
-        */
-        uploader.bind('FileUploaded', function(uploader, file, info){
+            });
+            /* bind 的参数很init FileUploaded  参数是不一样的。
+            info response: "{"hash":"FuhLJned9sAifJiitsLUf8QieMwk","key":"Icon-60@3x.png"}"
+            responseHeaders: "Pragma: no-cache
+            ↵Content-Type: application/json
+            ↵Cache-Control: no-store, no-cache, must-revalidate
+            ↵"
+            status: 200
+            */
+            uploader.bind('FileUploaded', function(uploader, file, info){
 
-        });
-        uploader.bind('Error', function(uploader, error, errorMsg){
+            });
+            uploader.bind('Error', function(uploader, error, errorMsg){
 
-        });
+            });
+        }
     }
-}
 
-// F.Qiniu = Qiniu;
-// F.QiniuUploader = QiniuUploader;
+
 
     var utils = UM.utils,
         browser = UM.browser,
@@ -170,7 +169,6 @@ QiniuUploader.prototype = {
             }
         },
         callback: function (editor, $w, url, state, qiniuResponse) {
-
             if (state == "SUCCESS") {
                 //显示图片计数+1
                 Upload.showCount++;
@@ -180,8 +178,8 @@ QiniuUploader.prototype = {
                 if ($(".edui-image-upload2", $w).length < 1) {
                     $(".edui-image-content", $w).append($item);
 
-                    Upload.render(".edui-image-content", 2)
-                        .config(".edui-image-upload2");
+                    Upload.render(".edui-image-content", 2, false);
+                    //     .config(".edui-image-upload2");
                 } else {
                     $(".edui-image-upload2", $w).before($item).show();
                 }
@@ -219,8 +217,8 @@ QiniuUploader.prototype = {
 
             me.editor = editor;
             me.dialog = $w;
-            me.render(".edui-image-local", 1);
-            me.config(".edui-image-upload1");
+            me.render(".edui-image-local", 1, true);
+            // me.config(".edui-image-upload1");
 
             // me.submit();
             // me.drag();
@@ -236,7 +234,7 @@ QiniuUploader.prototype = {
 
             return me;
         },
-        render: function (sel, t) {
+        render: function (sel, t, dragdrop) {
             var me = this;
 
             $(sel, me.dialog).append($(me.uploadTpl.replace(/%fieldName%/, me.editor.getOpt('imageFieldName')).replace(/%%/g, t)));
@@ -244,12 +242,17 @@ QiniuUploader.prototype = {
                 browse_button: 'J_FormPhotoIcon' + t,
                 container: 'J_FormPhoto',
                 drop_element: 'J_FormPhoto',
-
+                dragdrop: dragdrop,
                 uptoken_url: 'http://127.0.0.1:19110/uptoken',// 获取token 地址
                 domain: 'http://huixisheng.qiniudn.com/', // 七牛的domain
                 // }
             }
-            cfg = $.extend(cfg, me.editor.getOpt('qiniuimage'))
+            if( !dragdrop ){
+                cfg['drop_element'] = null;
+            }
+
+
+            cfg = $.extend(true, cfg, me.editor.getOpt('qiniuimage'))
             var instance = new QiniuUploader(cfg);
 
             var loadingInstance;
@@ -419,51 +422,6 @@ QiniuUploader.prototype = {
         }
     };
 
-    /*
-     * 网络图片
-     * */
-    var NetWork = {
-        init: function (editor, $w) {
-            var me = this;
-
-            me.editor = editor;
-            me.dialog = $w;
-
-            me.initEvt();
-        },
-        initEvt: function () {
-            var me = this,
-                url,
-                $ele = $(".edui-image-searchTxt", me.dialog);
-
-            $(".edui-image-searchAdd", me.dialog).on("click", function () {
-                url = Base.checkURL($ele.val());
-
-                if (url) {
-
-                    $("<img src='" + url + "' class='edui-image-pic' />").on("load", function () {
-
-
-
-                        var $item = $("<div class='edui-image-item'><div class='edui-image-close'></div></div>").append(this);
-
-                        $(".edui-image-searchRes", me.dialog).append($item);
-
-                        Base.scale(this, 120);
-
-                        $item.width($(this).width());
-
-                        Base.close($(this));
-
-                        $ele.val("");
-                    });
-                }
-            })
-                .hover(function () {
-                    $(this).toggleClass("hover");
-                });
-        }
-    };
 
     var $tab = null,
         currentDialog = null;
@@ -513,10 +471,7 @@ QiniuUploader.prototype = {
                     e.stopPropagation();
                 });
 
-
             Upload.init(editor, $w);
-
-            // NetWork.init(editor, $w);
         },
         buttons: {
             'ok': {
